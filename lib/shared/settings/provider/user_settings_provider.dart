@@ -36,6 +36,7 @@ class UserSettingsNotifier extends StateNotifier<Settings> {
       systemSettings: systemSettings,
       userSettings: userSettings,
     );
+    updateSystemDarkness();
   }
 
   void updateSettings({
@@ -68,6 +69,14 @@ class UserSettingsNotifier extends StateNotifier<Settings> {
         .put(SettingsConst.systemSettingsKey, updatedSystemSettings);
     HiveBoxes.userSettingsBox
         ?.put(SettingsConst.userSettingsKey, updatedUserSettings);
+  }
+
+  void updateSystemDarkness() {
+    if (state.systemSettings.followSystem) {
+      final systemBrightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      updateSettings(isDarkMode: systemBrightness == Brightness.dark);
+    }
   }
 }
 

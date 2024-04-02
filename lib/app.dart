@@ -21,7 +21,6 @@ class _ManitobaDrivingTestAppState extends ConsumerState<ManitobaDrivingTestApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _updateThemeDarkness();
   }
 
   @override
@@ -44,18 +43,11 @@ class _ManitobaDrivingTestAppState extends ConsumerState<ManitobaDrivingTestApp>
 
   @override
   void didChangePlatformBrightness() {
-    _updateThemeDarkness();
+    _updateSystemDarkness();
     super.didChangePlatformBrightness();
   }
 
-  void _updateThemeDarkness() {
-    final userSettings = ref.read(userSettingsProvider);
-    if (userSettings.systemSettings.followSystem) {
-      final systemBrightness =
-          WidgetsBinding.instance.platformDispatcher.platformBrightness;
-      ref.read(userSettingsProvider.notifier).updateSettings(
-            isDarkMode: systemBrightness == Brightness.dark,
-          );
-    }
+  void _updateSystemDarkness() {
+    ref.read(userSettingsProvider.notifier).updateSystemDarkness();
   }
 }
