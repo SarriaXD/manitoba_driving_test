@@ -2,8 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:manitoba_driving_test/shared/%20cache/hive_boxes.dart';
 import 'package:manitoba_driving_test/shared/evn/env_screen.dart';
 
@@ -12,19 +13,13 @@ import '../widgets/filled_bottom_button.dart';
 import 'provider/user_settings_provider.dart';
 import 'widgets/settings_color_picker.dart';
 
-class SettingsScreen extends ConsumerStatefulWidget {
+class SettingsScreen extends HookConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends ConsumerState<SettingsScreen>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    useAutomaticKeepAlive(wantKeepAlive: true);
     final state = ref.watch(userSettingsProvider);
-    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings', textScaler: TextScaler.linear(1.2)),
@@ -121,7 +116,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
