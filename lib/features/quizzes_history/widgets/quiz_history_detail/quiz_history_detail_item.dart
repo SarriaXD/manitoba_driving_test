@@ -1,13 +1,14 @@
 import 'package:animated_visibility/animated_visibility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:manitoba_driving_test/shared/theme/colors.dart';
 
 import '../../../quiz/models/question.dart';
 import '../../../quiz/widgets/quiz/quiz_answer_list.dart';
 import '../../../quiz/widgets/quiz/quiz_image.dart';
 
-class QuizHistoryDetailItem extends StatefulWidget {
+class QuizHistoryDetailItem extends HookWidget {
   const QuizHistoryDetailItem({
     super.key,
     required this.question,
@@ -18,46 +19,49 @@ class QuizHistoryDetailItem extends StatefulWidget {
   final bool expanded;
   final Function(bool) onExpand;
 
-  @override
-  State<QuizHistoryDetailItem> createState() => _QuizHistoryDetailItemState();
-}
-
-class _QuizHistoryDetailItemState extends State<QuizHistoryDetailItem> {
-  int _isAnimating = 0;
-  BuildContext? _lastContext;
-
   // When expanded animation done, show the item to viewports
-  void _animationComplete() {
-    _isAnimating--;
-    if (_isAnimating == 0 && _lastContext != null && mounted) {
-      _lastContext
+  void _animationComplete(
+    ObjectRef<int> isAnimating,
+    ObjectRef<BuildContext?> lastContext,
+  ) {
+    isAnimating.value--;
+    if (isAnimating.value == 0 &&
+        lastContext.value != null &&
+        lastContext.value?.mounted == true) {
+      lastContext.value
           ?.findRenderObject()
           ?.showOnScreen(duration: Durations.long1, curve: Curves.easeOutCubic);
     }
   }
 
-  void _expandedStateChanged() {
-    _isAnimating++;
-    Future.delayed(Durations.long1 + 10.milliseconds, _animationComplete);
+  // when the expanded state change, make sure this item be in viewports
+  void _expandedStateChanged(
+    ObjectRef<int> isAnimating,
+    ObjectRef<BuildContext?> lastContext,
+  ) {
+    isAnimating.value++;
+    Future.delayed(Durations.long1 + 10.milliseconds, () {
+      _animationComplete(isAnimating, lastContext);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    _lastContext = context;
+    final isAnimating = useRef(0);
+    final lastContext = useRef<BuildContext?>(null);
+    lastContext.value = context;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          widget.onExpand(!widget.expanded);
-          _expandedStateChanged();
-        });
+        onExpand(!expanded);
+        _expandedStateChanged(isAnimating, lastContext);
       },
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: widget.expanded
+            color: expanded
                 ? Theme.of(context).colorScheme.onBackground.withOpacity(.23)
                 : Theme.of(context).colorScheme.onBackground.withOpacity(.15),
-            width: widget.expanded ? 1.6 : 1,
+            width: expanded ? 1.6 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -65,12 +69,12 @@ class _QuizHistoryDetailItemState extends State<QuizHistoryDetailItem> {
         child: Column(
           children: [
             _Question(
-              question: widget.question,
-              expanded: widget.expanded,
+              question: question,
+              expanded: expanded,
             ),
             _Content(
-              question: widget.question,
-              expanded: widget.expanded,
+              question: question,
+              expanded: expanded,
             ),
           ],
         ),
