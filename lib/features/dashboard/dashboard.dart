@@ -1,43 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../shared/settings/settings_screen.dart';
 import '../quizzes_history/screens/quizzes_history_screen.dart';
 
-class DashboardScreen extends ConsumerStatefulWidget {
+class DashboardScreen extends HookConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  final _pageController = PageController();
-  final _historyScrollController = ScrollController();
-  var _selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedIndex = useState(0);
+    final pageController = usePageController(initialPage: 0);
+    final historyScrollController = useScrollController();
     return Scaffold(
       body: PageView(
-        controller: _pageController,
+        controller: pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          QuizzesHistoryScreen(scrollController: _historyScrollController),
+          QuizzesHistoryScreen(scrollController: historyScrollController),
           const SettingsScreen(),
         ],
         onPageChanged: (index) {},
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
+        selectedIndex: selectedIndex.value,
         onDestinationSelected: (value) {
-          setState(() {
-            _selectedIndex = value;
-            _pageController.jumpToPage(value);
-          });
+          selectedIndex.value = value;
+          pageController.jumpToPage(value);
         },
         destinations: [
-          _buildHistoryNavigationDestination(),
+          _buildHistoryNavigationDestination(
+              selectedIndex.value, historyScrollController),
           const NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Settings',
@@ -47,12 +41,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildHistoryNavigationDestination() {
-    if (_selectedIndex == 0) {
+  Widget _buildHistoryNavigationDestination(
+      int selectedIndex, ScrollController historyScrollController) {
+    if (selectedIndex == 0) {
       return GestureDetector(
         onDoubleTap: () {
-          if (_selectedIndex == 0) {
-            _historyScrollController.animateTo(
+          if (selectedIndex == 0) {
+            historyScrollController.animateTo(
               0,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
