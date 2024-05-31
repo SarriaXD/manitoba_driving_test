@@ -1,5 +1,6 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:manitoba_driving_test/features/quizzes_history/model/quiz_history.dart';
 import 'package:manitoba_driving_test/features/quizzes_history/screens/quiz_history_detail_screen.dart';
@@ -7,30 +8,26 @@ import 'package:manitoba_driving_test/shared/theme/colors.dart';
 
 import '../../../../shared/utils/time_formatter.dart';
 
-class QuizFinishedHistoryItem extends StatefulWidget {
+class QuizFinishedHistoryItem extends HookWidget {
   const QuizFinishedHistoryItem({
     super.key,
     required this.history,
     required this.onRemove,
   });
+
   final QuizHistory history;
-  final Function(int) onRemove;
-
-  @override
-  State<QuizFinishedHistoryItem> createState() =>
-      _QuizFinishedHistoryItemState();
-}
-
-class _QuizFinishedHistoryItemState extends State<QuizFinishedHistoryItem>
-    with SingleTickerProviderStateMixin {
-  late final controller = SlidableController(this);
+  final void Function(int) onRemove;
 
   @override
   Widget build(BuildContext context) {
+    final singleTickerProvider = useSingleTickerProvider();
+    final controller = useMemoized(() => SlidableController(
+          singleTickerProvider,
+        ));
     return Slidable(
       controller: controller,
-      key: ValueKey(widget.history.id),
-      endActionPane: _buildSlidableActionPane(),
+      key: ValueKey(history.id),
+      endActionPane: _buildSlidableActionPane(context, controller),
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: OpenContainer(
@@ -46,14 +43,15 @@ class _QuizFinishedHistoryItemState extends State<QuizFinishedHistoryItem>
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
           openBuilder: (context, action) {
-            return QuizHistoryDetailScreen(historyId: widget.history.id);
+            return QuizHistoryDetailScreen(historyId: history.id);
           },
         ),
       ),
     );
   }
 
-  ActionPane _buildSlidableActionPane() {
+  ActionPane _buildSlidableActionPane(
+      BuildContext context, SlidableController controller) {
     return ActionPane(
       motion: const ScrollMotion(),
       extentRatio: 0.4,
@@ -64,7 +62,7 @@ class _QuizFinishedHistoryItemState extends State<QuizFinishedHistoryItem>
               ResizeRequest(
                 Durations.medium2,
                 () {
-                  widget.onRemove(widget.history.id);
+                  onRemove(history.id);
                 },
               ),
             ),
@@ -115,7 +113,7 @@ class _QuizFinishedHistoryItemState extends State<QuizFinishedHistoryItem>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            _getIcon(widget.history.correctSize, widget.history.totalSize),
+            _getIcon(history.correctSize, history.totalSize),
             color: Theme.of(context)
                 .colorScheme
                 .onSecondaryContainer
@@ -130,21 +128,21 @@ class _QuizFinishedHistoryItemState extends State<QuizFinishedHistoryItem>
               children: [
                 _InfoRows(
                   info: {
-                    'Spent': TimeFormatter.formatTimeWithWords(
-                        widget.history.spentTime),
+                    'Spent':
+                        TimeFormatter.formatTimeWithWords(history.spentTime),
                     'Accuracy':
-                        '${widget.history.submittedSize == 0 ? 0 : (widget.history.correctSize / widget.history.submittedSize * 100).toInt()}%',
+                        '${history.submittedSize == 0 ? 0 : (history.correctSize / history.submittedSize * 100).toInt()}%',
                   },
                 ),
                 const SizedBox(height: 8),
                 _CorrectSizeRow(
-                  correctSize: widget.history.correctSize,
-                  totalSize: widget.history.totalSize,
+                  correctSize: history.correctSize,
+                  totalSize: history.totalSize,
                 ),
                 const SizedBox(height: 8),
                 _ProgressRow(
-                  correctSize: widget.history.correctSize,
-                  totalSize: widget.history.totalSize,
+                  correctSize: history.correctSize,
+                  totalSize: history.totalSize,
                 ),
               ],
             ),
