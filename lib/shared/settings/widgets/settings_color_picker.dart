@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 Future<Color?> showAdaptiveColorPicker(
     {required BuildContext context, required Color initialColor}) {
@@ -12,23 +13,19 @@ Future<Color?> showAdaptiveColorPicker(
   );
 }
 
-class _SettingsColorPicker extends StatefulWidget {
+class _SettingsColorPicker extends HookWidget {
   const _SettingsColorPicker({required this.initialColor});
   final Color initialColor;
 
   @override
-  State<_SettingsColorPicker> createState() => _SettingsColorPickerState();
-}
-
-class _SettingsColorPickerState extends State<_SettingsColorPicker> {
-  Color? _color;
-
-  @override
   Widget build(BuildContext context) {
-    return Platform.isIOS ? _iosDialog() : _androidDialog();
+    final color = useState(initialColor);
+    return Platform.isIOS
+        ? _iosDialog(color, context)
+        : _androidDialog(color, context);
   }
 
-  Widget _iosDialog() {
+  Widget _iosDialog(ValueNotifier<Color> color, BuildContext context) {
     return CupertinoAlertDialog(
       content: AnimatedSize(
         duration: Durations.medium1,
@@ -36,9 +33,9 @@ class _SettingsColorPickerState extends State<_SettingsColorPicker> {
           borderRadius: BorderRadius.circular(23),
           child: ColorPicker(
             onColorChanged: (value) {
-              _color = value;
+              color.value = value;
             },
-            color: widget.initialColor,
+            color: initialColor,
           ),
         ),
       ),
@@ -51,7 +48,7 @@ class _SettingsColorPickerState extends State<_SettingsColorPicker> {
         ),
         CupertinoDialogAction(
           onPressed: () {
-            Navigator.of(context).pop(_color);
+            Navigator.of(context).pop(color.value);
           },
           child: const Text('Select'),
         ),
@@ -59,7 +56,7 @@ class _SettingsColorPickerState extends State<_SettingsColorPicker> {
     );
   }
 
-  Widget _androidDialog() {
+  Widget _androidDialog(ValueNotifier<Color> color, BuildContext context) {
     return AlertDialog(
       content: AnimatedSize(
         duration: Durations.medium1,
@@ -70,9 +67,9 @@ class _SettingsColorPickerState extends State<_SettingsColorPicker> {
             children: [
               ColorPicker(
                 onColorChanged: (value) {
-                  _color = value;
+                  color.value = value;
                 },
-                color: widget.initialColor,
+                color: initialColor,
               ),
             ],
           ),
@@ -87,7 +84,7 @@ class _SettingsColorPickerState extends State<_SettingsColorPicker> {
         ),
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop(_color);
+            Navigator.of(context).pop(color.value);
           },
           child: const Text('Select'),
         ),
