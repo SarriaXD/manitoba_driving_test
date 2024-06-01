@@ -52,7 +52,7 @@ class QuizzesHistoryScreen extends HookConsumerWidget {
         unfinishedHistories: state.unfinishedHistories,
         finishedHistoriesOrDate: state.finishedHistoriesOrDate,
         isLoadingMore: state.isLoadingMore,
-        onReloadHistories: _onReloadHistories,
+        onReloadHistories: () => _onReloadHistories(ref),
         onHistoryRemoved: (historyId) => _onHistoryRemoved(ref, historyId));
   }
 
