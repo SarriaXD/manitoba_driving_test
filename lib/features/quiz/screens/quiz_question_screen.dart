@@ -115,7 +115,8 @@ class QuizQuestionScreen extends HookConsumerWidget {
         ),
         floatingActionButton: isButtonVisible.value && questions.isNotEmpty
             ? QuizFloatingActionButton(
-                isLastQuestion: currentQuestionIndex == questions.length - 1,
+                isLastQuestion:
+                    currentQuestionIndex.value == questions.length - 1,
                 isSubmitted: questions[currentQuestionIndex.value].isSubmitted,
                 isAnswerSelected:
                     questions[currentQuestionIndex.value].selectedAnswerId !=
