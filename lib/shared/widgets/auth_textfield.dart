@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class AuthTextField extends StatefulWidget {
+class AuthTextField extends HookWidget {
   const AuthTextField({
     super.key,
     this.onChanged,
@@ -23,28 +24,16 @@ class AuthTextField extends StatefulWidget {
   final Function(String)? onSubmitted;
 
   @override
-  State<AuthTextField> createState() => _AuthTextFieldState();
-}
-
-class _AuthTextFieldState extends State<AuthTextField> {
-  late bool obscureText;
-
-  @override
-  void initState() {
-    super.initState();
-    obscureText = widget.obscureText;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final obscureText = useState(this.obscureText);
     return TextField(
       decoration: InputDecoration(
-        labelText: widget.labelText,
+        labelText: labelText,
         border: UnderlineInputBorder(
           borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(16),
         ),
-        hintText: widget.hintText,
+        hintText: hintText,
         hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(.6),
               fontWeight: FontWeight.w600,
@@ -52,25 +41,23 @@ class _AuthTextFieldState extends State<AuthTextField> {
         filled: true,
         floatingLabelBehavior: FloatingLabelBehavior.auto,
         // isCollapsed: true,
-        errorText: widget.errorText,
-        suffixIcon: widget.obscureText
+        errorText: errorText,
+        suffixIcon: this.obscureText
             ? _SuffixIcon(
-                obscureText: obscureText,
+                obscureText: obscureText.value,
                 onPressed: () {
-                  setState(() {
-                    obscureText = !obscureText;
-                  });
+                  obscureText.value = !obscureText.value;
                 },
               )
             : null,
       ),
-      keyboardType: widget.keyboardType,
-      textInputAction: widget.textInputAction,
-      onChanged: widget.onChanged,
-      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onChanged: onChanged,
+      obscureText: obscureText.value,
       autocorrect: false,
       textCapitalization: TextCapitalization.none,
-      onSubmitted: widget.onSubmitted,
+      onSubmitted: onSubmitted,
       style: Theme.of(context)
           .textTheme
           .bodyLarge
