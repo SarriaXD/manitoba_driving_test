@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:manitoba_driving_test/features/quiz/events/quiz_pop_event.dart';
 import 'package:manitoba_driving_test/features/quiz/models/question.dart';
 import 'package:manitoba_driving_test/features/quiz/viewmodel/quiz_viewmodel.dart';
@@ -13,7 +14,7 @@ import '../state/quiz_state.dart';
 import '../widgets/quiz/quiz_floating_action_button.dart';
 import '../widgets/quiz/quiz_question.dart';
 
-class QuizQuestionScreen extends ConsumerStatefulWidget {
+class QuizQuestionScreen extends HookConsumerWidget {
   const QuizQuestionScreen({
     super.key,
     required this.historyId,
@@ -22,57 +23,48 @@ class QuizQuestionScreen extends ConsumerStatefulWidget {
   final int? historyId;
   final Function(int) onNavigateToResultScreen;
 
-  @override
-  ConsumerState<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
-}
-
-class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
-  var isButtonVisible = true;
-  final scrollController = ScrollController();
-  var currentQuestionIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    scrollController.addListener(() {
-      if (scrollController.position.userScrollDirection ==
-          ScrollDirection.reverse) {
-        if (isButtonVisible) {
-          setState(() {
-            isButtonVisible = false;
-          });
-        }
-      } else if (scrollController.position.userScrollDirection ==
-          ScrollDirection.forward) {
-        if (!isButtonVisible) {
-          setState(() {
-            isButtonVisible = true;
-          });
+  void _userScrollListener(
+      ScrollController scrollController, ValueNotifier<bool> isButtonVisible) {
+    useEffect(() {
+      void listener() {
+        if (scrollController.position.userScrollDirection ==
+            ScrollDirection.reverse) {
+          if (isButtonVisible.value) {
+            isButtonVisible.value = false;
+          }
+        } else if (scrollController.position.userScrollDirection ==
+            ScrollDirection.forward) {
+          if (!isButtonVisible.value) {
+            isButtonVisible.value = true;
+          }
         }
       }
-    });
+
+      scrollController.addListener(listener);
+      return () => scrollController.removeListener(listener);
+    }, [scrollController]);
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    scrollController.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isButtonVisible = useState(true);
+    final currentQuestionIndex = useState(0);
+    final scrollController = useScrollController();
+    _userScrollListener(scrollController, isButtonVisible);
     ref.listen(
-      quizViewModelProvider(widget.historyId),
-      listener,
+      quizViewModelProvider(historyId),
+      (previous, next) {
+        listener(previous, next, currentQuestionIndex);
+      },
     );
-    final questions = ref.watch(quizViewModelProvider(widget.historyId)
-        .select((value) => value.questions));
+    final questions = ref.watch(
+        quizViewModelProvider(historyId).select((value) => value.questions));
     return PopScope(
       canPop: false,
       onPopInvoked: (canPop) async {
         if (!canPop) {
-          final historyId = await ref
-              .read(quizViewModelProvider(widget.historyId).notifier)
+          await ref
+              .read(quizViewModelProvider(historyId).notifier)
               .saveHistory();
           if (context.mounted) {
             Navigator.of(context).pop(QuizPopEvent.reloadHistories);
@@ -112,31 +104,33 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
             child: questions.isEmpty
                 ? _buildLoadingShimmer()
                 : _buildQuestion(
-                    question: questions[currentQuestionIndex],
-                    questionIndex: currentQuestionIndex,
+                    ref: ref,
+                    currentQuestionIndex: currentQuestionIndex,
+                    context: context,
+                    question: questions[currentQuestionIndex.value],
+                    questionIndex: currentQuestionIndex.value,
                     questionSize: questions.length,
                   ),
           ),
         ),
-        floatingActionButton: isButtonVisible && questions.isNotEmpty
+        floatingActionButton: isButtonVisible.value && questions.isNotEmpty
             ? QuizFloatingActionButton(
                 isLastQuestion: currentQuestionIndex == questions.length - 1,
-                isSubmitted: questions[currentQuestionIndex].isSubmitted,
+                isSubmitted: questions[currentQuestionIndex.value].isSubmitted,
                 isAnswerSelected:
-                    questions[currentQuestionIndex].selectedAnswerId != null,
+                    questions[currentQuestionIndex.value].selectedAnswerId !=
+                        null,
                 onSubmitted: () => ref
-                    .read(quizViewModelProvider(widget.historyId).notifier)
-                    .onAnswerSubmitted(currentQuestionIndex),
+                    .read(quizViewModelProvider(historyId).notifier)
+                    .onAnswerSubmitted(currentQuestionIndex.value),
                 onNext: () {
-                  setState(() {
-                    currentQuestionIndex++;
-                  });
+                  currentQuestionIndex.value++;
                 },
                 onFinished: () async {
                   final historyId = await ref
-                      .read(quizViewModelProvider(widget.historyId).notifier)
+                      .read(quizViewModelProvider(this.historyId).notifier)
                       .saveHistory();
-                  widget.onNavigateToResultScreen(historyId);
+                  onNavigateToResultScreen(historyId);
                 },
               )
             : null,
@@ -144,7 +138,8 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
     );
   }
 
-  void listener(QuizState? previous, QuizState next) {
+  void listener(QuizState? previous, QuizState next,
+      ValueNotifier<int> currentQuestionIndex) {
     // when data comes, show first unSubmitted question
     if (previous != null &&
         previous.questions.isEmpty &&
@@ -152,9 +147,7 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
       final index =
           next.questions.indexWhere((element) => !element.isSubmitted);
       if (index != -1) {
-        setState(() {
-          currentQuestionIndex = index;
-        });
+        currentQuestionIndex.value = index;
       }
     }
   }
@@ -164,9 +157,12 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
   }
 
   Widget _buildQuestion({
+    required BuildContext context,
     required Question question,
     required int questionIndex,
     required int questionSize,
+    required WidgetRef ref,
+    required ValueNotifier<int> currentQuestionIndex,
   }) {
     return SizedBox(
       height: MediaQuery.of(context).size.height,
@@ -180,7 +176,7 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
               question: question.question,
               questionIndex: questionIndex,
               questionSize: questionSize,
-              historyId: widget.historyId,
+              historyId: historyId,
             ),
             const SizedBox(height: 16),
             QuizImage(
@@ -195,8 +191,8 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
               answers: question.answers,
               onAnswerSelected: (id) {
                 ref
-                    .read(quizViewModelProvider(widget.historyId).notifier)
-                    .onAnswerSelected(currentQuestionIndex, id);
+                    .read(quizViewModelProvider(historyId).notifier)
+                    .onAnswerSelected(currentQuestionIndex.value, id);
               },
             ),
           ],
