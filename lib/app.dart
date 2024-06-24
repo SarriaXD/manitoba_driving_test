@@ -1,37 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'shared/routers/routers.dart';
 import 'shared/settings/provider/user_settings_provider.dart';
 import 'shared/theme/theme_provider.dart';
 import 'shared/utils/edge_to_edge.dart';
 
-class ManitobaDrivingTestApp extends ConsumerStatefulWidget {
+class ManitobaDrivingTestApp extends HookConsumerWidget {
   const ManitobaDrivingTestApp({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() {
-    return _ManitobaDrivingTestAppState();
-  }
-}
-
-class _ManitobaDrivingTestAppState extends ConsumerState<ManitobaDrivingTestApp>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     context.enableEdgetToEdget();
+    useOnPlatformBrightnessChange((previous, current) =>
+        ref.read(userSettingsProvider.notifier).updateSystemDarkness());
     return MaterialApp.router(
       routerConfig: routers,
       theme: ref.watch(themeProvider),
@@ -39,15 +22,5 @@ class _ManitobaDrivingTestAppState extends ConsumerState<ManitobaDrivingTestApp>
         physics: const BouncingScrollPhysics(),
       ),
     );
-  }
-
-  @override
-  void didChangePlatformBrightness() {
-    _updateSystemDarkness();
-    super.didChangePlatformBrightness();
-  }
-
-  void _updateSystemDarkness() {
-    ref.read(userSettingsProvider.notifier).updateSystemDarkness();
   }
 }
