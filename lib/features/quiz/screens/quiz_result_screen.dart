@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:manitoba_driving_test/features/quiz/events/quiz_pop_event.dart';
 import 'package:manitoba_driving_test/features/quiz/widgets/quiz_result/quiz_result_information.dart';
 import 'package:manitoba_driving_test/features/quizzes_history/model/quiz_history.dart';
@@ -11,23 +12,6 @@ import 'package:manitoba_driving_test/shared/widgets/dark_mode_switch_button.dar
 import '../widgets/quiz_result/quiz_result_circle_progress.dart';
 import '../widgets/quiz_result/quiz_result_lottie_animation.dart';
 
-class QuizResultScreen extends ConsumerStatefulWidget {
-  const QuizResultScreen({
-    super.key,
-    required this.historyId,
-    required this.onReviewQuiz,
-    required this.onRetryQuiz,
-  });
-  final int historyId;
-  final Function() onReviewQuiz;
-  final Function() onRetryQuiz;
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() {
-    return _QuizResultScreenState();
-  }
-}
-
 enum _ResultQuality {
   perfect,
   great,
@@ -35,9 +19,20 @@ enum _ResultQuality {
   niceTry,
 }
 
-class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
+class QuizResultScreen extends HookConsumerWidget {
+  const QuizResultScreen({
+    super.key,
+    required this.historyId,
+    required this.onReviewQuiz,
+    required this.onRetryQuiz,
+  });
+
+  final int historyId;
+  final Function() onReviewQuiz;
+  final Function() onRetryQuiz;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final historyRepository = ref.watch(quizzesHistoryRepositoryProvider(
         FirebaseAuth.instance.currentUser?.uid));
     return PopScope(
@@ -54,7 +49,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           actions: const [DarkModeSwitchButton()],
         ),
         body: FutureBuilder(
-          future: historyRepository.getHistory(widget.historyId),
+          future: historyRepository.getHistory(historyId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -119,13 +114,13 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton(
-                            onPressed: widget.onReviewQuiz,
+                            onPressed: onReviewQuiz,
                             child: const Text('Review Quiz'),
                           ),
                         ),
                         const SizedBox(height: 8),
                         _DelayedEnableTextButton(
-                          onRetryQuiz: widget.onRetryQuiz,
+                          onRetryQuiz: onRetryQuiz,
                         ),
                       ]
                           .animate(
@@ -183,35 +178,22 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
   }
 }
 
-class _DelayedEnableTextButton extends StatefulWidget {
+class _DelayedEnableTextButton extends HookWidget {
   const _DelayedEnableTextButton({required this.onRetryQuiz});
+
   final Function() onRetryQuiz;
 
   @override
-  State<_DelayedEnableTextButton> createState() => _DelayedRetryButtonState();
-}
-
-class _DelayedRetryButtonState extends State<_DelayedEnableTextButton> {
-  var canPress = false;
-  final Duration delay = 1.seconds;
-
-  @override
-  void initState() {
-    super.initState();
-    // Delay the button enable
-    Future.delayed(delay, () {
-      if (mounted) {
-        setState(() {
-          canPress = true;
-        });
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final canPress = useState(false);
+    useEffect(() {
+      Future.delayed(1.seconds, () {
+        canPress.value = true;
+      });
+      return null;
+    }, []);
     return TextButton.icon(
-      onPressed: canPress ? widget.onRetryQuiz : null,
+      onPressed: canPress.value ? onRetryQuiz : null,
       icon: const Icon(Icons.replay),
       label: const Text('Retry'),
     );
