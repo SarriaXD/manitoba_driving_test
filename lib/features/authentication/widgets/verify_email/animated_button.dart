@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -76,46 +78,30 @@ class VerifyEmailAnimatedButton extends ConsumerWidget {
   }
 }
 
-class _AutoDisableButton extends StatefulWidget {
+class _AutoDisableButton extends HookWidget {
   const _AutoDisableButton({
     required this.onPressed,
     required this.child,
     required this.isEmailVerified,
   });
+
   final void Function() onPressed;
   final Widget child;
   final bool isEmailVerified;
 
-  @override
-  State<_AutoDisableButton> createState() => __AutoDisableButtonState();
-}
-
-class __AutoDisableButtonState extends State<_AutoDisableButton> {
-  bool _isButtonDisabled = false;
-  final _seconds = 20;
-  Timer? _timer;
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    setState(() {
-      _isButtonDisabled = true;
-    });
-    _timer = Timer(Duration(seconds: _seconds), () {
-      if (mounted) {
-        setState(() {
-          _isButtonDisabled = false;
-        });
-      }
+  void _startTimer(
+      ValueNotifier<Timer?> timer, ValueNotifier<bool> isButtonVisible) {
+    timer.value?.cancel();
+    isButtonVisible.value = false;
+    timer.value = Timer(20.seconds, () {
+      isButtonVisible.value = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final timer = useState<Timer?>(null);
+    final isButtonVisible = useState(true);
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         elevation: 4,
@@ -124,13 +110,13 @@ class __AutoDisableButtonState extends State<_AutoDisableButton> {
         ),
         padding: const EdgeInsets.all(12),
       ),
-      onPressed: _isButtonDisabled && !widget.isEmailVerified
-          ? null
-          : () {
-              widget.onPressed();
-              _startTimer();
-            },
-      child: widget.child,
+      onPressed: isButtonVisible.value || isEmailVerified
+          ? () {
+              onPressed();
+              _startTimer(timer, isButtonVisible);
+            }
+          : null,
+      child: child,
     );
   }
 }
