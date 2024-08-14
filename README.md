@@ -7,16 +7,10 @@ emphasizes a dark theme with customizable color accents.
 
 ### 1. Firebase Authentication
 
-<div style="display: flex; justify-content: space-between; max-width: 800px;">
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_firebase_1.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_firebase_2.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_firebase_3.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
+<div align="center">
+  <img src="showcase/images/flutter_firebase_1.png" width="30%" alt="Firebase Authentication">
+  <img src="showcase/images/flutter_firebase_2.png" width="30%" alt="Feature 2">
+  <img src="showcase/images/flutter_firebase_3.png" width="30%" alt="Feature 3">
 </div>
 
 - Secure login and personalized settings for each user
@@ -25,16 +19,10 @@ emphasizes a dark theme with customizable color accents.
 
 ### 2. Interactive Quiz Interface
 
-<div style="display: flex; justify-content: space-between; max-width: 800px;">
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_test_1.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_test_2.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_test_3.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
+<div align="center">
+  <img src="showcase/images/flutter_test_1.png" width="30%" alt="Firebase Authentication">
+  <img src="showcase/images/flutter_test_2.png" width="30%" alt="Feature 2">
+  <img src="showcase/images/flutter_test_3.png" width="30%" alt="Feature 3">
 </div>
 
 - Engaging interface with fun animations
@@ -44,16 +32,10 @@ emphasizes a dark theme with customizable color accents.
 
 ### 3. Dynamic Color Themes
 
-<div style="display: flex; justify-content: space-between; max-width: 800px;">
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_dynamic_color_1.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_dynamic_color_2.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_dynamic_color_3.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
+<div align="center">
+  <img src="showcase/images/flutter_dynamic_color_1.png" width="30%" alt="Firebase Authentication">
+  <img src="showcase/images/flutter_dynamic_color_2.png" width="30%" alt="Feature 2">
+  <img src="showcase/images/flutter_dynamic_color_3.png" width="30%" alt="Feature 3">
 </div>
 
 - Customizable app appearance with various color themes
@@ -62,16 +44,10 @@ emphasizes a dark theme with customizable color accents.
 
 ### 4. History and Review
 
-<div style="display: flex; justify-content: space-between; max-width: 800px;">
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_history_1.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_history_2.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
-    <div style="width: 30%;">
-        <img src="showcase/images/flutter_history_3.png" width="1271" height="2621" alt="Firebase Authentication" style="width: 100%; height: auto">
-    </div>
+<div align="center">
+  <img src="showcase/images/flutter_history_1.png" width="30%" alt="Firebase Authentication">
+  <img src="showcase/images/flutter_history_2.png" width="30%" alt="Feature 2">
+  <img src="showcase/images/flutter_history_3.png" width="30%" alt="Feature 3">
 </div>
 
 - Secure local storage of test history
